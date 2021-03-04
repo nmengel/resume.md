@@ -9,10 +9,10 @@ style it with [CSS](resume.css), output to [HTML](resume.html) and
 
 ## Prerequisites
 
- - Python >= 3.6
- - Google Chrome or Chromium
+ - Python ≥ 3.6
  - [python-markdown](https://python-markdown.github.io/) (`pip install
    markdown`)
+ - Optional, required for PDF output: Google Chrome or Chromium
 
 ## Usage
 
@@ -29,16 +29,7 @@ style it with [CSS](resume.css), output to [HTML](resume.html) and
      - Use `--no-html` or `--no-pdf` to disable HTML or PDF output.
 
      - Use `--chrome-path=/path/to/chrome` if resume.py cannot find your Chrome
-       or Chromium executable (`resume.py` uses [Google Chrome or Chromium in
-       headless
-       mode](https://developers.google.com/web/updates/2017/04/headless-chrome)
-       to make the PDF).
-
-Optionally, run this while you are working on your resume to rebuild it whenever
-resume.md or resume.css change (requires
-[entr](http://eradman.com/entrproject/)):
-
-    ls resume.md resume.css | entr python3 resume.py
+       or Chromium executable.
 
 ## Customization
 
