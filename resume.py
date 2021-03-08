@@ -135,16 +135,25 @@ def write_pdf(html: str, prefix: str = "resume", chrome: str = "") -> None:
         # https://superuser.com/q/1292863/719700
         options.append(f"--crash-dumps-dir={tmpdir}"),
         options.append(f"--user-data-dir={tmpdir}")
-        subprocess.run(
-            [
-                chrome,
-                *options,
-                f"--print-to-pdf={prefix}.pdf",
-                "data:text/html;base64," + html64.decode("utf-8"),
-            ],
-            check=True,
-        )
-        logging.info(f"Wrote {prefix}.pdf")
+        try:
+            subprocess.run(
+                [
+                    chrome,
+                    *options,
+                    f"--print-to-pdf={prefix}.pdf",
+                    "data:text/html;base64," + html64.decode("utf-8"),
+                ],
+                check=True,
+            )
+            logging.info(f"Wrote {prefix}.pdf")
+        except subprocess.CalledProcessError as exc:
+            if exc.returncode == -6:
+                logging.warning(
+                    "Chrome died with <Signals.SIGABRT: 6> "
+                    f"but you may find {prefix}.pdf was created succesfully."
+                )
+            else:
+                raise exc
 
 
 if __name__ == "__main__":
@@ -169,10 +178,12 @@ if __name__ == "__main__":
         "--chrome-path",
         help="Path to Chrome or Chromium executable",
     )
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("-q", "--quiet", action="store_true")
     args = parser.parse_args()
 
-    if args.verbose:
+    if args.quiet:
+        logging.basicConfig(level=logging.WARN, format="%(message)s")
+    else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     prefix, _ = os.path.splitext(args.file)
