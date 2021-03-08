@@ -1,5 +1,4 @@
 from typing import List
-
 import markdown
 
 preamble = """
@@ -20,7 +19,7 @@ postamble = """
 """
 
 
-def title(mdlines: List[str]) -> str:
+def title(mdlines):
     """
     Return the contents of the first markdown heading in mdlines, which we
     assume to be the title of the document.

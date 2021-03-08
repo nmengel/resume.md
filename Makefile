@@ -6,7 +6,7 @@ watch:
 	ls *.md *.css | entr make resume
 
 resume.html: resume.md resume.py
-	python resume.py
+	python3 resume.py
 
 resume.pdf: resume.html resume.css
 	weasyprint resume.html resume.pdf
