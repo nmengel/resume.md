@@ -2,9 +2,11 @@
 import argparse
 import base64
 import itertools
+import logging
 import os
 import subprocess
 import sys
+import tempfile
 
 import markdown
 
@@ -75,6 +77,7 @@ def guess_chrome_path() -> str:
         guesses = CHROME_GUESSES_LINUX
     for guess in guesses:
         if os.path.exists(guess):
+            logging.info("Found Chrome or Chromium at " + guess)
             return guess
     raise ValueError("Could not find Chrome. Please set CHROME_PATH.")
 
@@ -121,9 +124,8 @@ def write_pdf(html: str, prefix: str = "resume", chrome: str = "") -> None:
     options = [
         "--headless",
         "--print-to-pdf-no-header",
-        "--crash-dumps-dir=/tmp",
         "--enable-logging=stderr",
-        "--log-level=1",
+        "--log-level=2",
     ]
     # https://superuser.com/q/1292863/719700
     if sys.platform == "darwin":
@@ -132,15 +134,19 @@ def write_pdf(html: str, prefix: str = "resume", chrome: str = "") -> None:
     if sys.platform == "win32":
         options.append("--disable-gpu")
 
-    subprocess.run(
-        [
-            chrome,
-            *options,
-            f"--print-to-pdf={prefix}.pdf",
-            "data:text/html;base64," + html64.decode("utf-8"),
-        ],
-        check=True,
-    )
+    with tempfile.TemporaryDirectory(prefix="resume.md_") as tmpdir:
+        options.append(f"--crash-dumps-dir={tmpdir}"),
+        options.append(f"--user-data-dir={tmpdir}")
+        subprocess.run(
+            [
+                chrome,
+                *options,
+                f"--print-to-pdf={prefix}.pdf",
+                "data:text/html;base64," + html64.decode("utf-8"),
+            ],
+            check=True,
+        )
+        logging.info(f"Wrote {prefix}.pdf")
 
 
 if __name__ == "__main__":
@@ -165,8 +171,11 @@ if __name__ == "__main__":
         "--chrome-path",
         help="Path to Chrome or Chromium executable",
     )
-
+    parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     prefix, _ = os.path.splitext(args.file)
 
@@ -177,6 +186,7 @@ if __name__ == "__main__":
     if not args.no_html:
         with open(prefix + ".html", "w") as htmlfp:
             htmlfp.write(html)
+            logging.info(f"Wrote {htmlfp.name}")
 
     if not args.no_pdf:
         write_pdf(html, prefix=prefix, chrome=args.chrome_path)
