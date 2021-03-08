@@ -127,14 +127,12 @@ def write_pdf(html: str, prefix: str = "resume", chrome: str = "") -> None:
         "--enable-logging=stderr",
         "--log-level=2",
     ]
-    # https://superuser.com/q/1292863/719700
-    if sys.platform == "darwin":
-        options.append("--crash-dumps-dir=/tmp")
     # https://bugs.chromium.org/p/chromium/issues/detail?id=737678
     if sys.platform == "win32":
         options.append("--disable-gpu")
 
     with tempfile.TemporaryDirectory(prefix="resume.md_") as tmpdir:
+        # https://superuser.com/q/1292863/719700
         options.append(f"--crash-dumps-dir={tmpdir}"),
         options.append(f"--user-data-dir={tmpdir}")
         subprocess.run(
@@ -171,7 +169,7 @@ if __name__ == "__main__":
         "--chrome-path",
         help="Path to Chrome or Chromium executable",
     )
-    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
     if args.verbose:
